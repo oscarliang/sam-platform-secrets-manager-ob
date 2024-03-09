@@ -39,6 +39,11 @@ for secret in secrets_config['secrets']:
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceExistsException':
             print(f"Secret {secret_name} already exists. Skipping creation.")
-            # response = secretsmanager_client.update_secret(...)
+            # response = secretsmanager_client.update_secret(
+            #     SecretId=secret_name,
+            #     Description=secret_description,
+            #     SecretString=decrypted_secret
+            # )
+            # print(response)
         else:
             raise
