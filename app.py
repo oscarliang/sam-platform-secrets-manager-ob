@@ -18,6 +18,7 @@ for secret in secrets_config['secrets']:
     secret_description = secret['description']
     kms_key_id = secret['kms_key_id'] 
     encryted_file = secret['name']+".enc"
+    role_arns = secret.get('role_arns', [])
 
     # Read the encrypted data
     with open(encryted_file, 'rb') as enc_file:
