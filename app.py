@@ -17,15 +17,15 @@ for secret in secrets_config['secrets']:
     secret_name = secret['name']
     secret_description = secret['description']
     kms_key_id = secret['kms_key_id'] 
+    encryted_file = secret['name']+".enc"
 
     # Read the encrypted data
-    with open('nonprod-sql-rds-dbsecret.enc', 'rb') as enc_file:
+    with open(encryted_file, 'rb') as enc_file:
         encrypted_data = enc_file.read()
 
     # Decrypt the data
     decrypt_response = kms_client.decrypt(CiphertextBlob=encrypted_data, KeyId=kms_key_id)
     decrypted_data = decrypt_response['Plaintext']
-
     decrypted_secret = decrypted_data.decode('utf-8') 
 
     try:
