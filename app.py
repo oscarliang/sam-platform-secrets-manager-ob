@@ -1,6 +1,6 @@
 import boto3
 import yaml
-import pprint
+from botocore.exceptions import ClientError
 
 # Load the YAML file
 with open('secrets.yaml', 'r') as file:
@@ -40,19 +40,20 @@ secretsmanager_client = boto3.client('secretsmanager')
 
 # Iterate over each secret in the list of secrets
 for secret in secrets_config['secrets']:
-    # Access the 'name' of the current secret
     secret_name = secret['name']
-    print(secret_name)
-
-    # Access the 'description' of the current secret
     secret_description = secret['description']
-    print(secret_description)
 
-    response = secretsmanager_client.create_secret(
-        Name=secret_name,
-        Description=secret_description,
-        SecretString=decrypted_secret
-    )
-    
-    # Print the response from AWS Secrets Manager
-    print(response)
+    try:
+        response = secretsmanager_client.create_secret(
+            Name=secret_name,
+            Description=secret_description,
+            SecretString=decrypted_secret
+        )
+        print(response)
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceExistsException':
+            print(f"Secret {secret_name} already exists. Skipping creation.")
+            # response = secretsmanager_client.update_secret(...)
+        else:
+            raise
