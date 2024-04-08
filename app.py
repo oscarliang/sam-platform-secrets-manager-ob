@@ -11,8 +11,6 @@ load_dotenv()
 # Get the environment folder name
 secrets_folder = os.getenv('ENV_FOLDER')
 
-# print(secrets_folder)
-
 if not secrets_folder:
     raise ValueError("ENV_FOLDER environment variable is not set")
 
@@ -24,8 +22,6 @@ if not secrets_folder.endswith('/'):
 with open(secrets_folder + 'secrets.yaml', 'r') as file:
     secrets_config = yaml.safe_load(file)
 
-# print(secrets_config)
-
 # Create a KMS client
 kms_client = boto3.client('kms')
 
@@ -34,17 +30,11 @@ secretsmanager_client = boto3.client('secretsmanager')
 
 # Iterate over each secret in the list of secrets
 for secret in secrets_config['secrets']:
-    # print(secret)
     secret_name = secret['name']
-    # print(secret_name)
     secret_description = secret['description']
-    # print(secret_description)
     kms_key_id = secret['kms_key_id']
-    # print(kms_key_id) 
     encryted_file = secrets_folder + secret['name']+".enc"
-    # print(encryted_file)
     role_arns = secret.get('role_arns', [])
-    # print(role_arns)
 
     # Construct the policy document
     policy = {
@@ -61,16 +51,13 @@ for secret in secrets_config['secrets']:
 
     # Convert the policy document to a JSON string
     policy_str = json.dumps(policy)
-    # print(policy_str)
 
     # Read the encrypted data
     with open(encryted_file, 'rb') as enc_file:
         encrypted_data = enc_file.read()
-        # print(encrypted_data)
 
     # Decrypt the data
     decrypt_response = kms_client.decrypt(CiphertextBlob=encrypted_data, KeyId=kms_key_id)
-    print(decrypt_response)
     decrypted_data = decrypt_response['Plaintext']
     decrypted_secret = decrypted_data.decode('utf-8') 
 
