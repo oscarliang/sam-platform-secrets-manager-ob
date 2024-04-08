@@ -1,10 +1,25 @@
+import os
 import boto3
 import yaml
 import json
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the environment folder name
+secrets_folder = os.getenv('ENV_FOLDER')
+
+if not secrets_folder:
+    raise ValueError("ENV_FOLDER environment variable is not set")
+
+# Append a slash if it's not present
+if not secrets_folder.endswith('/'):
+    secrets_folder += '/'
 
 # Load the YAML file
-with open('secrets.yaml', 'r') as file:
+with open(secrets_folder + 'secrets.yaml', 'r') as file:
     secrets_config = yaml.safe_load(file)
 
 # Create a KMS client
@@ -18,7 +33,7 @@ for secret in secrets_config['secrets']:
     secret_name = secret['name']
     secret_description = secret['description']
     kms_key_id = secret['kms_key_id'] 
-    encryted_file = secret['name']+".enc"
+    encryted_file = secrets_folder + secret['name']+".enc"
     role_arns = secret.get('role_arns', [])
 
     # Construct the policy document
