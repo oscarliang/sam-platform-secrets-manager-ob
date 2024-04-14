@@ -67,6 +67,22 @@ for secret in secrets_config['secrets']:
         kms_key_id = secret['kms_key_id']
         encrypted_file = secrets_folder + secret['name'] + ".enc"
 
+        secret_description = secret['description']
+        role_arns = secret.get('role_arns', [])
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": role_arns},
+                    "Action": "secretsmanager:GetSecretValue",
+                    "Resource": "*"
+                }
+            ]
+        }
+
+        policy_str = json.dumps(policy)
+
         # Read and decrypt the data
         with open(encrypted_file, 'rb') as enc_file:
             encrypted_data = enc_file.read()
