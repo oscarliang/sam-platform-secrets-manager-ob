@@ -92,12 +92,24 @@ for secret in secrets_config['secrets']:
                     SecretId=secret_name,
                     SecretString=decrypted_secret
                 )
+
+                secretsmanager_client.put_resource_policy(
+                    SecretId=secret_name,
+                    ResourcePolicy=policy_str
+                )
+
                 print(f"Updated secret {secret_name}.")
             else:
                 secretsmanager_client.create_secret(
                     Name=secret_name,
                     SecretString=decrypted_secret
                 )
+
+                secretsmanager_client.put_resource_policy(
+                    SecretId=secret_name,
+                    ResourcePolicy=policy_str
+                )
+
                 print(f"Created secret {secret_name}.")
         except ClientError as e:
             print(f"Error updating or creating secret {secret_name}: {e}")
