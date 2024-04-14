@@ -76,14 +76,28 @@ for secret in secrets_config['secrets']:
         decrypted_secret = decrypted_data.decode('utf-8')
 
         try:
-            # Create the secret in Secrets Manager
-            secretsmanager_client.create_secret(
-                Name=secret_name,
-                SecretString=decrypted_secret
-            )
-            print(f"Created secret {secret_name}.")
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'ResourceExistsException':
-                print(f"Secret {secret_name} already exists. Skipping creation.")
+            # Update or create secret depending on its existence
+            try:
+                # Check if the secret already exists
+                secretsmanager_client.describe_secret(SecretId=secret_name)
+                exists = True
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                    exists = False
+                else:
+                    raise
+            
+            if exists:
+                secretsmanager_client.update_secret(
+                    SecretId=secret_name,
+                    SecretString=decrypted_secret
+                )
+                print(f"Updated secret {secret_name}.")
             else:
-                raise
+                secretsmanager_client.create_secret(
+                    Name=secret_name,
+                    SecretString=decrypted_secret
+                )
+                print(f"Created secret {secret_name}.")
+        except ClientError as e:
+            print(f"Error updating or creating secret {secret_name}: {e}")
